@@ -1,0 +1,169 @@
+<html>
+<head>
+<style>
+.entry {
+	width : 64px;
+}
+.range {
+	width : 800px;
+}
+</style>
+</head>
+<body>
+
+<table>
+<tbody>
+<tr>
+	<td>Amplitude</td>
+	<td><input id="amp-edit" type="entry" class="entry"></input></td>
+	<td><input id="amp-range" type="range" class="range" min="0" max="1" step="0.01"></td>
+</tr>
+<tr>
+	<td>Pitch</td>
+	<td><input id="pitch-edit" type="entry" class="entry"></input></td>
+	<td><input id="pitch-range" type="range" class="range" min="0" max="22050"></td>
+</tr>
+<tr>
+	<td>Noise</td>
+	<td><input id="noise-edit" type="entry" class="entry"></input></td>
+	<td><input id="noise-range" type="range" class="range" min="0" max="2" step="0.0025"></td>
+</tr>
+<tr>
+	<td>Pulse</td>
+	<td><input id="pulse-edit" type="entry" class="entry"></input></td>
+	<td><input id="pulse-range" type="range" class="range" min="0" max="4" step="0.0025"></td>
+</tr>
+</tbody>
+</table>
+
+<script>
+
+var amp_edit = document.getElementById('amp-edit');
+var amplitude_input = document.getElementById('amp-range');
+var pitch_edit = document.getElementById('pitch-edit');
+var pitch_input = document.getElementById('pitch-range');
+var noise_edit = document.getElementById('noise-edit');
+var noise_input = document.getElementById('noise-range');
+var pulse_edit = document.getElementById('pulse-edit');
+var pulse_input = document.getElementById('pulse-range');
+
+amp_edit.value = amplitude_input.valueAsNumber;
+pitch_edit.value = pitch_input.valueAsNumber;
+noise_edit.value = noise_input.valueAsNumber;
+pulse_edit.value = pulse_input.valueAsNumber;
+
+function getSyncEdit(edit)
+{
+	return function (e)
+	{
+		edit.value = this.valueAsNumber;
+	}
+}
+
+amplitude_input.oninput = getSyncEdit(amp_edit);
+pitch_input.oninput = getSyncEdit(pitch_edit);
+noise_input.oninput = getSyncEdit(noise_edit);
+pulse_input.oninput = getSyncEdit(pulse_edit);
+
+function getSyncRange(range)
+{
+	return function (e)
+	{
+		var value = parseFloat(this.value);
+		if (!isNaN(value))
+		{
+			range.valueAsNumber = value;
+			this.value = range.valueAsNumber;
+		}
+	}
+}
+amp_edit.onchange = getSyncRange(amplitude_input);
+pitch_edit.onchange = getSyncRange(pitch_input);
+noise_edit.onchange = getSyncRange(noise_input);
+pulse_edit.onchange = getSyncRange(pulse_input);
+
+
+var ac = new AudioContext();
+var scriptNode = ac.createScriptProcessor(4096, 1, 1);
+
+// noise
+var tn = 0;
+var nfreq = 44100 / 8;
+
+// pulse
+var tp = 0;
+
+
+var oldAmp = pitch_input.valueAsNumber;
+var t = 0;
+var oldFreq = pitch_input.valueAsNumber;
+
+scriptNode.onaudioprocess = function (e)
+{
+	var buffer = e.outputBuffer;
+	
+	var inAmp = amplitude_input.valueAsNumber;
+	var inFreq = pitch_input.valueAsNumber;
+	var inNoise = noise_input.valueAsNumber;
+	var inPulse = pulse_input.valueAsNumber;
+	
+	//if (inNoise > 0)
+	{
+		// linear interpolation from prev freq to new one with noise
+		var newT = t;
+		var newTN = tn;
+		var newTP = tp;
+		for (var c = 0; c < buffer.numberOfChannels; c++)
+		{
+			var data = buffer.getChannelData(c);
+			samples = data.length;
+
+			newT = t;
+			newTN = tn;
+			newTP = tp;
+
+			for (var s = 0; s < data.length; s++)
+			{
+				var amp = oldAmp + (inAmp - oldAmp) * s / data.length;
+				var freq = oldFreq + (inFreq - oldFreq) * s / data.length;
+
+				var r = Math.random() * 2 - 1;
+
+				newT += 2 * Math.PI * freq / ac.sampleRate + inNoise * r;// * r;
+
+				newTP += inPulse * 2 * Math.PI / ac.sampleRate;
+				var v = Math.max(0, Math.min(1, Math.sin(newTP) + 0.5)) * amp;
+
+				data[s] = Math.sin(newT) * v;
+			}
+		}
+		t = newT;
+		tn = newTN;
+		tp = newTP;
+	}
+	
+	oldAmp = inAmp;
+	oldFreq = inFreq;
+}
+
+var playing = false;
+function toggle()
+{
+	if (!playing)
+	{
+		playing = true;
+		scriptNode.connect(ac.destination);
+	}
+	else
+	{
+		playing = false;
+		scriptNode.disconnect();
+	}
+}
+
+</script>
+
+<button onclick="toggle(); this.innerText=playing?'Stop':'Play'">Play</button>
+
+</body>
+</html>

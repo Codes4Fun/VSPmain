@@ -1,0 +1,241 @@
+<html>
+<head>
+<style>
+html, body {
+	height: 100%;
+	margin: 0px;
+	background-color: rgb(240,240,240);
+}
+
+.View {
+	position: relative;
+	overflow: auto;
+	border: 2px inset rgb(250,250,250);
+	box-sizing: border-box;
+	background-color: white;
+}
+
+.Num {
+	width:64px;
+}
+
+.Groove {
+	border: 2px groove rgb(250,250,250);
+	padding: 4px;
+}
+
+.Line {
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+.Item {
+	cursor: default;
+}
+
+.Item-selected {
+	cursor: default;
+	color: white;
+	background-color: rgb(51,153,255);
+}
+
+.Menu {
+	cursor: default;
+	background-color: rgb(245,246,247);
+}
+
+.MenuItem {
+	display: inline-block;
+	padding-left: 4px;
+	padding-right: 4px;
+	cursor: default;
+	border: 1px solid transparent;
+}
+
+.MenuItem:hover {
+	background-color: rgb(213,231,248);
+	border-color: rgb(122,177,232);
+	border-style: solid;
+}
+
+.PopupMenu {
+	background-color: rgb(240,240,240);
+	border: 1px rgb(151,151,151) solid;
+	padding: 2px;
+	position:absolute;
+	z-index:1;
+	box-shadow: 5px 5px 4px -4px;
+}
+
+.PopupMenuItem {
+	border: 1px transparent solid;
+	padding-left: 27px;
+	padding-right: 50px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+.PopupMenuItem:hover {
+	background-color: rgb(209,226,242);
+	border: 1px rgb(120,174,229) solid;
+}
+</style>
+</head>
+<body>
+<div id="splitView" style="overflow:hidden;width:100%;height:100%">
+
+<div id="menu">
+<div class="MenuItem">File<div class="PopupMenu">
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnNewDocument()">New</div>
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnOpenDocument()">Open...</div>
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnSaveDocument()">Save...</div>
+</div></div>
+<div class="MenuItem">Model<div class="PopupMenu">
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnModelNew()">New</div>
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnModelOpen()">Open...</div>
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnModelSave()">Save...</div>
+</div></div>
+<div class="MenuItem">Wave<div class="PopupMenu">
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnWaveNew()">New</div>
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnWaveOpen()">Open...</div>
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnWaveSave()">Save...</div>
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnWaveRender()">Render</div>
+</div></div>
+<div class="MenuItem">View<div class="PopupMenu">
+	<div class="PopupMenuItem" onmousedown="TestView.OnViewWaveform()">Wave form</div>
+	<div class="PopupMenuItem" onmousedown="TestView.OnViewSpectrogram()">Spectrogram</div>
+</div></div>
+<div class="MenuItem">Help<div class="PopupMenu">
+	<div class="PopupMenuItem" onmousedown="alert('VSTest Version 1.0\nCopyright (C) 1999-2015')">About VSTest...</div>
+</div></div>
+</div>
+
+<div id="Controls" class="View" style="float:left;width:320px;height:283px;background-color:inherit">
+<div class="Line">
+<button onclick="TestDoc.OnOpenDocument()">Open</button>
+<button onclick="TestDoc.OnWaveOpen()">Open Wave</button>
+<button onclick="TestDoc.OnModelOpen()">Open Model</button>
+</div>
+<div class="Groove Line">
+<div class="Line">Time View</div>
+<div class="Line">
+Mode
+<input type="radio" name="mode" onclick="ViewData.OnRadioSelect()" checked>Select</input>
+<input type="radio" name="mode" onclick="ViewData.OnRadioKeySelect()">Key Select</input>
+<input type="radio" name="mode" onclick="ViewData.OnRadioKeyAdd()">Key Add</input>
+</div>
+<div class="Groove Line">
+<div class="Line">Key</div>
+<div class="Line">Frequency <input type="text" id="KeyFreq" class="Num"></input> <input type="checkbox" id="KeyNoise">Noise</input></div>
+<div class="Line">Amplitude <input type="text" id="KeyAmp" class="Num"></input></div>
+<div class="Line"><button onclick="ViewData.OnButtonKeyApply()">Apply</button><button onclick="ViewData.OnButtonKeyReset()">Reset</button></div>
+</div>
+</div>
+<div class="Groove Line">
+<div class="Line">Graph View</div>
+<div class="Line">Frequency <input type="text" id="PhonFreq" class="Num"></input> <input type="checkbox" id="PhonNoise">Noise</input></div>
+<div class="Line"><button onclick="ViewData.OnButtonPhonApply()">Apply</button><button onclick="ViewData.OnButtonPhonReset()">Reset</button></div>
+</div>
+</div>
+
+<div id="TimeLine" class="View" style="float:left"></div>
+
+<div id="KeyList" class="View" style="float:left"></div>
+
+<div id="Graph" class="View" style="float:left"></div>
+
+</div>
+
+<script src="FT.js"></script>
+<script src="svg.js"></script>
+<script src="TestDoc.js"></script>
+<script>
+
+var splitView = document.getElementById('splitView');
+
+function onResize()
+{
+	var menuY = splitView.children[0].offsetHeight;
+
+	var totalWidth = splitView.offsetWidth;
+	var totalHeight = splitView.offsetHeight - menuY;
+
+	var splitX = splitView.children[1].offsetWidth;
+	var splitY = splitView.children[1].offsetHeight;
+
+	splitView.children[2].style.width = (totalWidth - splitX) + 'px';
+	splitView.children[2].style.height = splitY + 'px';
+	splitView.children[3].style.width = splitX + 'px';
+	splitView.children[3].style.height = (totalHeight - splitY) + 'px';
+	splitView.children[4].style.width = (totalWidth - splitX) + 'px';
+	splitView.children[4].style.height = (totalHeight - splitY) + 'px';
+}
+
+document.body.addEventListener('load', onResize, true);
+window.addEventListener('resize', onResize, true);
+
+function clickMenuItem(e)
+{
+	e.stopPropagation();
+	e.preventDefault();
+	var popup = e.currentTarget.firstElementChild;
+	if (popup)
+	{
+		if (popup.style.display == 'block')
+		{
+			popup.style.display='none';
+		}
+		else
+		{
+			for (var i = 0; i < popupMenus.length; i++)
+			{
+				popupMenus[i].style.display = 'none';
+			}
+			popup.style.display='block';
+		}
+	}
+}
+
+function clickPopupMenuItem(e)
+{
+	e.stopPropagation();
+	e.preventDefault();
+	var popup = e.currentTarget.parentElement;
+	if (popup)
+	{
+		popup.style.display='none';
+	}
+}
+
+var menuItems = document.querySelectorAll('.MenuItem');
+for (var i = 0; i < menuItems.length; i++)
+{
+	menuItems[i].addEventListener('mousedown', clickMenuItem, false);
+}
+
+var popupMenus = document.querySelectorAll('.PopupMenu');
+for (var i = 0; i < popupMenus.length; i++)
+{
+	popupMenus[i].style.display = 'none';
+}
+
+var popupMenuItems = document.querySelectorAll('.PopupMenuItem');
+for (var i = 0; i < popupMenuItems.length; i++)
+{
+	popupMenuItems[i].addEventListener('mousedown', clickPopupMenuItem, false);
+}
+
+</script>
+<script src="ViewData.js"></script>
+<script src="ViewListForms.js"></script>
+<script src="TestView.js"></script>
+<script src="SAGraphView.js"></script>
+<script>
+ViewData.OnInitialUpdate();
+ViewListForms.OnInitialUpdate();
+TestView.OnInitialUpdate();
+SAGraphView.OnInitialUpdate();
+</script>
+
+</body>
+</html>

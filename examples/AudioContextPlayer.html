@@ -1,0 +1,44 @@
+<html>
+<body>
+
+<script>
+
+var ac = new AudioContext();
+var source = ac.createBufferSource();
+source.loop = true;
+
+var input = document.createElement('input');
+input.type = 'file';
+input.onchange = function (e)
+{
+	var reader = new FileReader();
+	reader.onload = function (e)
+	{
+		fileData = reader.result;
+		ac.decodeAudioData(fileData,
+			function (buffer)
+			{
+				gbuffer = buffer;
+				sampleRate = buffer.sampleRate;
+				if (buffer.numberOfChannels > 0)
+				{
+					gdata = buffer.getChannelData(0);
+				}
+				source.buffer = buffer
+				source.connect(ac.destination);
+				source.start();
+			},
+			function (e)
+			{
+				alert('decode failed ' + e.err);
+				console.log('decode failed ' + e.err);
+			}
+		);
+	}
+	reader.readAsArrayBuffer(e.target.files[0]);
+}
+
+</script>
+<button onclick="input.click()">choose</button>
+</body>
+</html>

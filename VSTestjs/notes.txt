@@ -1,0 +1,18 @@
+
+This is an html/javascript port of a program I created in MFC.
+
+The oldest file is dated 6/13/1999 but that is likely copied from another project.
+The oldest file specific to this project is dated 7/1/1999.
+It looks like I stopped working on it around 9/1/1999 but touched files on 12/6/1999.
+I was likely working on other projects in parallel but it looks like I spent 2 months on it.
+
+It looks like I started to pick up this project again around 9/25/2003 and stopped 10/2/2003.
+The project at this time period appears buggy.
+
+I tried recreating this project in python 2009, but python performance was aweful.
+
+
+The reasons I chose html/javascript:
+1) It's everywhere, I don't need to install a compiler, or worry over library availability.
+2) It performs well enough, though I've compromised in order to port closer the original.
+

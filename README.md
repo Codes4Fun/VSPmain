@@ -6,7 +6,7 @@
 
 This is an html/javascript port of a program I original wrote in 1999 using C++ and MFC.
 
-https://codes4fun.github.io/VSPmain/VSTestjs/
+https://codes4fun.github.io/VSPmain/VSTestjs/VSTest.html
 
 It is intended to synthesize voices by hand modeling phonemes from reference audio.
 

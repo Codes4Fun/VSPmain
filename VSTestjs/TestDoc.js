@@ -166,24 +166,27 @@ function readVsd(file) {
 	reader.readAsArrayBuffer(file);
 }
 
+function loadVsdJson(json) {
+	TestDoc.frequency = json.frequency;
+	TestDoc.noise = json.noise;
+	TestDoc.vertex = json.vertex;
+
+	TestDoc.phonKey = json.phonKey;
+	TestDoc.curPKey = null;
+	TestDoc.renderSeconds = json.renderSeconds;
+	
+	TestView.OnInitialUpdate();
+	SAGraphView.OnInitialUpdate();
+	ViewData.OnInitialUpdate();
+}
+
 function readVsdJson(file) {
 	let reader = new FileReader();
 	reader.onload = function (e)
 	{
 		result = this.result;
 		let json = JSON.parse(this.result);
-		TestDoc.frequency = json.frequency;
-		TestDoc.noise = json.noise;
-		TestDoc.vertex = json.vertex;
-
-		TestDoc.phonKey = json.phonKey;
-		TestDoc.curPKey = null;
-		TestDoc.renderSeconds = json.renderSeconds;
-		
-		TestView.OnInitialUpdate();
-		SAGraphView.OnInitialUpdate();
-		ViewData.OnInitialUpdate();
-		//input.values = '';
+		loadVsdJson(json);
 	}
 	reader.readAsText(file);
 }
@@ -213,6 +216,12 @@ TestDoc.OnOpenDocument = function ()
 	TestDoc.input.onchange = TestDoc.OnDocumentChosen;
 	TestDoc.input.click();
 };
+
+TestDoc.OnOpenExample = function() {
+	fetch('./examples/IngeborgHallstein.vsd.json')
+	.then(response => response.json())
+	.then(loadVsdJson);
+}
 
 TestDoc.OnSaveDocument = function ()
 {

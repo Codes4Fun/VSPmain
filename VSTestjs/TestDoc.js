@@ -71,6 +71,7 @@ for (var i = 0; i < strPhonemes.length; i++)
 
 TestDoc.curPKey = null;
 TestDoc.phonKey = [];
+TestDoc.renderSeconds = 1.5;
 
 
 TestDoc.input = document.createElement('input');
@@ -114,28 +115,21 @@ TestDoc.OnNewDocument = function ()
 	TestDoc.OnWaveNew();
 };
 
-TestDoc.OnDocumentChosen = function (e)
-{
-	if (e.target.files.length != 1)
-	{
-		return;
-	}
-	var reader = new FileReader();
+function readVsd(file) {
+	let reader = new FileReader();
 	reader.onload = function (e)
 	{
-		fileData = reader.result;
+		//fileData = reader.result;
+		let dv = new DataView(reader.result);
 
-		//ar = new Uint8Array(reader.result);
-		dv = new DataView(reader.result);
-
-		var offset = 0;
-		for (var i = 0; i < strPhonemes.length; i++)
+		let offset = 0;
+		for (let i = 0; i < strPhonemes.length; i++)
 		{
 			TestDoc.frequency[i] = dv.getFloat32(offset, true);
 			offset += 4;
 			TestDoc.noise[i] = dv.getUint32(offset, true) != 0? true : false;
 			offset += 4;
-			for (var j = 0; j < 37; j++)
+			for (let j = 0; j < 37; j++)
 			{
 				TestDoc.vertex[i][j].x = dv.getFloat32(offset, true);
 				offset += 4;
@@ -146,12 +140,12 @@ TestDoc.OnDocumentChosen = function (e)
 		TestDoc.phonKey = [];
 		TestDoc.curPKey = null;
 		
-		var count = dv.getUint32(offset, true);
+		let count = dv.getUint32(offset, true);
 		offset += 4;
 
-		for (var i = 0; i < count; i++)
+		for (let i = 0; i < count; i++)
 		{
-			var phonKey = { };
+			let phonKey = { };
 			phonKey.time = dv.getFloat32(offset, true);
 			offset += 4;
 			phonKey.phoneme = dv.getUint32(offset, true);
@@ -164,19 +158,54 @@ TestDoc.OnDocumentChosen = function (e)
 			offset += 4;
 			TestDoc.phonKey.push(phonKey);
 		}
+	
+		TestView.OnInitialUpdate();
+		SAGraphView.OnInitialUpdate();
+		ViewData.OnInitialUpdate();
+	}
+	reader.readAsArrayBuffer(file);
+}
 
+function readVsdJson(file) {
+	let reader = new FileReader();
+	reader.onload = function (e)
+	{
+		result = this.result;
+		let json = JSON.parse(this.result);
+		TestDoc.frequency = json.frequency;
+		TestDoc.noise = json.noise;
+		TestDoc.vertex = json.vertex;
+
+		TestDoc.phonKey = json.phonKey;
+		TestDoc.curPKey = null;
+		TestDoc.renderSeconds = json.renderSeconds;
+		
 		TestView.OnInitialUpdate();
 		SAGraphView.OnInitialUpdate();
 		ViewData.OnInitialUpdate();
 		//input.values = '';
 	}
+	reader.readAsText(file);
+}
+
+TestDoc.OnDocumentChosen = function (e)
+{
+	if (e.target.files.length != 1)
+	{
+		return;
+	}
+	let fileNameLC = e.target.files[0].name.toLowerCase();
+	if (fileNameLC.endsWith(".vsd")) {
+		readVsd(e.target.files[0]);
+	} else if (fileNameLC.endsWith(".vsd.json")) {
+		readVsdJson(e.target.files[0]);
+	}
 	TestDoc.stringDocName = e.target.files[0].name;
-	var ext = TestDoc.stringDocName.lastIndexOf('.');
+	let ext = TestDoc.stringDocName.lastIndexOf('.vsd');
 	if (ext != -1)
 	{
 		TestDoc.stringDocName = TestDoc.stringDocName.substr(0, ext);
 	}
-	reader.readAsArrayBuffer(e.target.files[0]);
 };
 
 TestDoc.OnOpenDocument = function ()
@@ -186,6 +215,25 @@ TestDoc.OnOpenDocument = function ()
 };
 
 TestDoc.OnSaveDocument = function ()
+{
+	let json = {
+		frequency : TestDoc.frequency,
+		noise : TestDoc.noise,
+		vertex : TestDoc.vertex,
+	
+		phonKey : TestDoc.phonKey,
+	
+		renderSeconds : TestDoc.renderSeconds
+	};
+
+	let text = JSON.stringify(json, null, 2);
+
+	TestDoc.a.download = TestDoc.stringDocName + '.vsd.json';
+	TestDoc.a.href = 'data:application/json;charset=UTF-8,' + encodeURIComponent(text);
+	TestDoc.a.click();
+};
+
+TestDoc.OnExportVsdDocument = function ()
 {
 	var dataSize = (37*8+8)*strPhonemes.length + 4 + TestDoc.phonKey.length*20;
 	var ab = new ArrayBuffer(dataSize);
@@ -232,7 +280,6 @@ TestDoc.OnSaveDocument = function ()
 	TestDoc.a.href = 'data:application/octect-stream;base64,' + b64;
 	TestDoc.a.click();
 };
-
 
 TestDoc.ac = new AudioContext();
 TestDoc.buffer = null;
@@ -416,6 +463,16 @@ TestDoc.OnWaveRender = function ()
 		pkey=TestDoc.phonKey[pkeyIndex];
 		pkeyPrev=null;
 		phonKeyTime=Math.trunc(pkey.time*TestDoc.format.nSamplesPerSec);
+		let minDataLength = TestDoc.format.nSamplesPerSec * TestDoc.renderSeconds;
+
+		if (!TestDoc.buffer
+		 || TestDoc.buffer.sampleRate != TestDoc.format.nSamplesPerSec
+		 || TestDoc.buffer.length != minDataLength
+		 || TestDoc.buffer.numberOfChannels != 1) {
+			TestDoc.buffer = TestDoc.ac.createBuffer(1, minDataLength, TestDoc.format.nSamplesPerSec);
+		}
+		TestDoc.data = TestDoc.buffer.getChannelData(0);
+
 		for(i=0;i<TestDoc.data.length;i++){
 			if(pkeyPrev){
 				if(i<=phonKeyTime){
@@ -539,7 +596,11 @@ TestDoc.OnWaveRender = function ()
 	}else{
 		for(i=0;i<TestDoc.data.length;i++) TestDoc.data[i]=0;
 	}
-
+	var ftdSize = GetFFTClosestSize(TestDoc.format.nSamplesPerSec/30);
+	if (!TestDoc.ftd || TestDoc.ftd.length != ftdSize) {
+		TestDoc.ftd = AllocFTData(ftdSize);
+		TestDoc.ftdo = AllocFTData(ftdSize);
+	}
 	TestView.OnInitialUpdate();
 };
 

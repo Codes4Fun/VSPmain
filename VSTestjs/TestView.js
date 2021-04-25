@@ -356,10 +356,20 @@ TestView.OnViewSpectrogram = function ()
 					nextY = nextY - height;
 					var mag = Math.sqrt(ftdo.data[j].x * ftdo.data[j].x
 						+ ftdo.data[j].y * ftdo.data[j].y);
-					var color = Math.trunc(Math.log(mag) * 20) + 180;
 					if (color < 0) color = 0;
 					if (color > 255) color = 255;
-					ctx.fillStyle = 'rgb(' + color + ',0,0)';
+					ctx.fillStyle = 'rgb(' + color + ',0,0)';*/
+
+					let intensity = 1*1024*(1 - 1 / (1 + mag))
+
+					if (intensity < 0) intensity = 0;
+					else if (intensity > 1023) intensity = 1023;
+					let r, g, b;
+					intensity /= 1023;
+					r = Math.trunc(255*Math.sin(0.5*Math.PI*intensity));
+					g = Math.trunc(255*intensity*intensity);
+					b = 255*0.78*(intensity + 0.18*Math.sin(2*Math.PI*intensity));
+					ctx.fillStyle = 'rgb('+r+','+g+','+b+')';
 					ctx.fillRect(i, 255 - (j * 512 / ftd.length), 1, height);
 				}
 				nextY += height;

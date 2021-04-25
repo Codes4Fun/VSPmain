@@ -356,10 +356,6 @@ TestView.OnViewSpectrogram = function ()
 					nextY = nextY - height;
 					var mag = Math.sqrt(ftdo.data[j].x * ftdo.data[j].x
 						+ ftdo.data[j].y * ftdo.data[j].y);
-					if (color < 0) color = 0;
-					if (color > 255) color = 255;
-					ctx.fillStyle = 'rgb(' + color + ',0,0)';*/
-
 					let intensity = 1*1024*(1 - 1 / (1 + mag))
 
 					if (intensity < 0) intensity = 0;

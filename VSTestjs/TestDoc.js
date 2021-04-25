@@ -39,7 +39,7 @@ TestDoc.mode=0;
 
 TestDoc.format =
 {
-	nSamplesPerSec : 11025,
+	nSamplesPerSec : 44100,
 };
 TestDoc.data = [];
 /*for (var i = 0; i < 11025; i++)

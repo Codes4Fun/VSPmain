@@ -564,6 +564,7 @@ SAGraphView.OnUpdate = function ()
 		fdata=0;
 		for(j=1;j<31;j++){
 			freq=TestDoc.frequency[TestDoc.curVertex]*j;
+			amp = 0;
 			for(k=1;k<49;k++){
 				if(freq<sdvert[k].x){
 					u=(freq-sdvert[k-1].x)/(sdvert[k].x-sdvert[k-1].x);

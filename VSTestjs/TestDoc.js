@@ -562,6 +562,7 @@ TestDoc.OnWaveRender = function ()
 					)*j
 					+noi_s
 					*Math.cos(i*Math.PI*0.0131+j*Math.PI*0.2);
+				amp = 0;
 				for(k=1;k<49;k++){
 					if(freq<sdvert[k].x){
 						u=(freq-sdvert[k-1].x)/(sdvert[k].x-sdvert[k-1].x);

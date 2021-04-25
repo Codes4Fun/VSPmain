@@ -38,7 +38,12 @@ ViewData.OnUpdate = function ()
 
 ViewData.OnButtonPhonApply = function()
 {
-	TestDoc.frequency[TestDoc.curVertex] = ViewData.PhonFreq.value;
+	let frequency = parseFloat(ViewData.PhonFreq.value);
+	if (isNaN(frequency)) {
+		alert("frequency needs to be a number");
+		return;
+	}
+	TestDoc.frequency[TestDoc.curVertex] = frequency;
 	TestDoc.noise[TestDoc.curVertex] = ViewData.PhonNoise.checked;
 	SAGraphView.OnUpdate();
 };
@@ -71,9 +76,20 @@ ViewData.OnButtonKeyApply = function()
 {
 	if (TestDoc.curPKey)
 	{
-		TestDoc.curPKey.frequency = ViewData.KeyFreq.value;
-		TestDoc.curPKey.noise = ViewData.KeyNoise.checked;
-		TestDoc.curPKey.amplitude = ViewData.KeyAmp.value;
+		let frequency = parseFloat(ViewData.KeyFreq.value);
+		let noise = ViewData.KeyNoise.checked;
+		let amplitude = parseFloat(ViewData.KeyAmp.value);
+		if (isNaN(frequency)) {
+			alert("frequency needs to be a number");
+			return;
+		}
+		if (isNaN(amplitude)) {
+			alert("amplitude needs to be a number");
+			return;
+		}
+		TestDoc.curPKey.frequency = frequency;
+		TestDoc.curPKey.noise = noise;
+		TestDoc.curPKey.amplitude = amplitude;
 	}
 };
 

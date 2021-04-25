@@ -89,6 +89,7 @@ html, body {
 	<div class="PopupMenuItem" onmousedown="TestDoc.OnNewDocument()">New</div>
 	<div class="PopupMenuItem" onmousedown="TestDoc.OnOpenDocument()">Open...</div>
 	<div class="PopupMenuItem" onmousedown="TestDoc.OnSaveDocument()">Save...</div>
+	<div class="PopupMenuItem" onmousedown="TestDoc.OnExportVsdDocument()">Export VSD...</div>
 </div></div>
 <div class="MenuItem">Model<div class="PopupMenu">
 	<div class="PopupMenuItem" onmousedown="TestDoc.OnModelNew()">New</div>
@@ -108,14 +109,17 @@ html, body {
 <div class="MenuItem">Help<div class="PopupMenu">
 	<div class="PopupMenuItem" onmousedown="alert('VSTest Version 1.0\nCopyright (C) 1999-2015')">About VSTest...</div>
 </div></div>
+<div>
+	<button onclick="TestDoc.OnOpenDocument()">Open</button>
+	<button onclick="TestDoc.OnWaveOpen()">Open Wave</button>
+	<button onclick="TestDoc.OnWaveRender()">Render</button>
+	<button onclick="TestDoc.play()">Play</button>
+	<button onclick="TestDoc.stop()">Stop</button>
+	<!-- <button onclick="TestDoc.OnModelOpen()">Open Model</button> -->
+</div>
 </div>
 
 <div id="Controls" class="View" style="float:left;width:320px;height:283px;background-color:inherit">
-<div class="Line">
-<button onclick="TestDoc.OnOpenDocument()">Open</button>
-<button onclick="TestDoc.OnWaveOpen()">Open Wave</button>
-<button onclick="TestDoc.OnModelOpen()">Open Model</button>
-</div>
 <div class="Groove Line">
 <div class="Line">Time View</div>
 <div class="Line">

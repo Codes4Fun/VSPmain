@@ -12,6 +12,8 @@ It is intended to synthesize voices by hand modeling phonemes from reference aud
 
 The phonemes can then be placed as notes, rendered and then saved as a wave file.
 
+It has a built in demo that you can load, render a wave and playback by pressing "Open Example", "Render", "play".
+
 ## Examples
 
 ### AudioContext Player
@@ -44,9 +46,13 @@ General
 * Improve documentation, create tutorials
 
 VSTest
-* Set wave length, for rendering (currently requires loading audio file before rendering)
-* Add quick loadable examples
-* Add ability to playback loaded and rendered audio
+* Set wave length, for rendering
+  * currently requires loading audio file before rendering
+  * implemented in code but requires UI
+* Add keyless phoneme editing, either as a layer or as a mode, convert phoneme keys to this
+* Add support for floating dialogues and progress bars
+* Move wave rendering, spectrogram generation, and others into web workers and provide progress bars and ability to cancel
+* Add support for filters, reverb, etc
 * Tutorial on how it works
 * Improve/Integrate newer noise generation algorithm
 

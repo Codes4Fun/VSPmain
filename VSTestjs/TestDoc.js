@@ -307,6 +307,7 @@ TestDoc.play = function ()
 		TestDoc.source.loop = true;
 		TestDoc.source.connect(TestDoc.ac.destination);
 		TestDoc.source.start();
+		TestDoc.data = TestDoc.buffer.getChannelData(0);
 	}
 };
 
